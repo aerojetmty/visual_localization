@@ -99,18 +99,35 @@ class SatelliteMapReader(BaseMapReader):
     def _load_csv_metadata(self):
         """Load metadata from a CSV file into a DataFrame."""
         csv_files = list(self.db_path.glob("*.csv"))
+    
         if len(csv_files) == 0:
             raise FileNotFoundError(f"No CSV files found in {self.db_path}")
         if len(csv_files) > 1:
             raise ValueError(f"Multiple CSV files found in {self.db_path}")
+    
         csv_file = csv_files[0]
         self.logger.info(f"Loading metadata from {csv_file}")
+
         df = pd.read_csv(csv_file)
+
+        # Debug: print first few rows before processing
+        print(f"🔹 First few rows of CSV before processing:\n{df.head()}")
+
         if not all(col in df.columns for col in self.COLUMN_NAMES):
             raise ValueError(f"Invalid metadata columns in {csv_file}")
-        df["Filename"] = df["Filename"].apply(lambda x: x.split(".")[0])
+
+        # Fix potential filename mismatch (check before and after)
+        print("🔹 Filenames in CSV before stripping extension:")
+        print(df["Filename"].head())  # Print some filenames before modification
+
+        df["Filename"] = df["Filename"].str.replace(".png", "", regex=False)  # Explicitly remove .png
+
+        print("🔹 Filenames in CSV after stripping extension:")
+        print(df["Filename"].head())  # Print some filenames after modification
+
         self._geo_metadata = df
         self.logger.info("Metadata loaded successfully")
+
 
     def set_image_metadata(self, image_name: str, metadata: Dict[str, float]) -> None:
         """Set metadata for a specific image."""
@@ -126,20 +143,40 @@ class SatelliteMapReader(BaseMapReader):
         """Set metadata for all images in the database."""
         self.logger.info("Setting metadata for all images")
 
+        print(f"📂 Metadata contains {len(self._geo_metadata)} entries.")  # Debugging print
+        print(f"📂 Total images loaded: {len(self._image_db)}")  # Debugging print
+
+        metadata_filenames = set(self._geo_metadata["Filename"].tolist())
+        image_filenames = set(img_info.name for img_info in self._image_db)
+
+        print("🔹 First few metadata filenames:", list(metadata_filenames)[:10])
+        print("🔹 First few image filenames:", list(image_filenames)[:10])
+
+        # Find missing filenames
+        missing_from_metadata = image_filenames - metadata_filenames
+        missing_from_images = metadata_filenames - image_filenames
+
+        if missing_from_metadata:
+            print(f"⚠️ Images missing metadata: {missing_from_metadata}")
+
+        if missing_from_images:
+            print(f"⚠️ Metadata exists for images that are not in the dataset: {missing_from_images}")
+
         for img_info in tqdm(self._image_db):
-            img_metadata = self._geo_metadata[
-                self._geo_metadata["Filename"] == img_info.name
-            ]
+            print(f"🔍 Checking metadata for image: {img_info.name}")
+
+            img_metadata = self._geo_metadata[self._geo_metadata["Filename"] == img_info.name]
+
             if len(img_metadata) == 1:
                 img_metadata = img_metadata.to_dict(orient="records")[0]
                 del img_metadata["Filename"]
                 self.set_image_metadata(img_info.name, img_metadata)
+                print(f"✅ Metadata found for {img_info.name}: {img_metadata}")  # Debugging print
             elif len(img_metadata) > 1:
-                self.logger.warning(
-                    f"Multiple metadata entries found for image {img_info.name}"
-                )
+                self.logger.warning(f"⚠️ Multiple metadata entries found for image {img_info.name}")
             else:
-                self.logger.warning(f"Metadata not found for image {img_info.name}")
+                self.logger.warning(f"⚠️ Metadata not found for image {img_info.name}")
+                print(f"❌ Metadata not found for image {img_info.name}")  # Debugging print
 
     @property
     def goe_metadata(self) -> pd.DataFrame:

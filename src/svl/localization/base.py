@@ -354,7 +354,7 @@ class BasePipeline:
         GpsCoordinate
             the GPS coordinates of the drone
         """
-
+            
         latitude = satellite_image.top_left.lat + abs(matching_center[1]) * (
             satellite_image.bottom_right.lat - satellite_image.top_left.lat
         )
