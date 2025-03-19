@@ -143,8 +143,8 @@ class SatelliteMapReader(BaseMapReader):
         """Set metadata for all images in the database."""
         self.logger.info("Setting metadata for all images")
 
-        print(f"📂 Metadata contains {len(self._geo_metadata)} entries.")  # Debugging print
-        print(f"📂 Total images loaded: {len(self._image_db)}")  # Debugging print
+        print(f"Metadata contains {len(self._geo_metadata)} entries.")  # Debugging print
+        print(f"Total images loaded: {len(self._image_db)}")  # Debugging print
 
         metadata_filenames = set(self._geo_metadata["Filename"].tolist())
         image_filenames = set(img_info.name for img_info in self._image_db)
@@ -157,13 +157,13 @@ class SatelliteMapReader(BaseMapReader):
         missing_from_images = metadata_filenames - image_filenames
 
         if missing_from_metadata:
-            print(f"⚠️ Images missing metadata: {missing_from_metadata}")
+            print(f"Images missing metadata: {missing_from_metadata}")
 
         if missing_from_images:
-            print(f"⚠️ Metadata exists for images that are not in the dataset: {missing_from_images}")
+            print(f"Metadata exists for images that are not in the dataset: {missing_from_images}")
 
         for img_info in tqdm(self._image_db):
-            print(f"🔍 Checking metadata for image: {img_info.name}")
+            print(f"Checking metadata for image: {img_info.name}")
 
             img_metadata = self._geo_metadata[self._geo_metadata["Filename"] == img_info.name]
 
@@ -171,12 +171,12 @@ class SatelliteMapReader(BaseMapReader):
                 img_metadata = img_metadata.to_dict(orient="records")[0]
                 del img_metadata["Filename"]
                 self.set_image_metadata(img_info.name, img_metadata)
-                print(f"✅ Metadata found for {img_info.name}: {img_metadata}")  # Debugging print
+                print(f"Metadata found for {img_info.name}: {img_metadata}")  # Debugging print
             elif len(img_metadata) > 1:
-                self.logger.warning(f"⚠️ Multiple metadata entries found for image {img_info.name}")
+                self.logger.warning(f"Multiple metadata entries found for image {img_info.name}")
             else:
-                self.logger.warning(f"⚠️ Metadata not found for image {img_info.name}")
-                print(f"❌ Metadata not found for image {img_info.name}")  # Debugging print
+                self.logger.warning(f"Metadata not found for image {img_info.name}")
+                print(f"Metadata not found for image {img_info.name}")  # Debugging print
 
     @property
     def goe_metadata(self) -> pd.DataFrame:

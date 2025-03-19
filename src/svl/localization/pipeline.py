@@ -210,7 +210,7 @@ class Pipeline(BasePipeline):
                     mkpts1=matched_kpts1,
                     color=color,
                     text="",
-                    path=None,
+                    path=str(viz_path),
                     show_keypoints=True,
                     small_text=[
                         f"GT: {gt_coordinates}",
