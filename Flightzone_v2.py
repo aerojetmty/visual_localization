@@ -3,12 +3,12 @@ import math
 import requests
 
 # Google Maps API Key 
-GOOGLE_API_KEY = "API KEY HERE!!!"  
+GOOGLE_API_KEY = ""  
 
 # flight zone
-top_left_lat, top_left_long = 59.438, 24.730  # Modify 
-bottom_right_lat, bottom_right_long = 59.429, 24.750  # Modify 
-zoom = 18  # Change for resolution
+top_left_lat, top_left_long = 59.4657714368397, 24.458499073851957  # Modify 
+bottom_right_lat, bottom_right_long = 59.44891330643761, 24.48592197803286  # Modify 
+zoom = 16  # Change for resolution
 tile_size = 640  # Google Static Maps max 640x640
 
 # Convert Latitude/Longitude to steps
